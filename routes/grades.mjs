@@ -26,7 +26,7 @@ const router = express.Router();
 //          somehow iterate through, you might combine limit(n) and skip(m)
 // ===== make sure that you are using async-await
 // because db access requests are asynchronous, but we need that data
-// before we move on....
+// before we move on
 router.get("/", async (req, res) => {
   let collection = await db.collection("grades");
 
@@ -36,4 +36,25 @@ router.get("/", async (req, res) => {
   else res.send(results).status(200);
 });
 
+// The show route is READ, but limiting to a specific entry
+// in this case, we'll use id to get a specific grades entry
+router.get("/:id", async (req, res) => {
+  // in the connection, remember that we have already accessed the sample training db
+  // now we are going to access the 'grades' collection in that db
+  let collection = await db.collection("grades");
+
+  // define the query
+  // in this, we are searching for a specific id
+  let query;
+  try {
+    query = { _id: new ObjectId(req.params.id) };
+    let result = await collection.findOne(query);
+
+    if (!result) res.send("not found").status(404);
+    else res.send(result).status(200);
+  } catch (err) {
+    res.send("not an id").status(400);
+  }
+  // console.log(query)
+});
 export default router;
